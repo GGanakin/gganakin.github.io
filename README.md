@@ -1,1 +1,0 @@
-# gganakin.github.io
