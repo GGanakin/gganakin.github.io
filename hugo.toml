@@ -1,0 +1,30 @@
+baseURL = 'https://gganakin.github.io/'
+languageCode = 'zh-CN'
+title = 'My New Hugo Site'
+theme = 'hyde'
+
+hasCJKLanguage = true
+enableEmoji = true
+
+[permalinks]
+  posts = "/:filenam
+
+[Menus]
+  main = [
+      {Name = "Archives", URL = "<https://gganakin.github.io/my-blog/posts/>"},
+      {Name = "Tags", URL = "<https://gganakin.github.io/my-blog/tags/>"},
+      {Name = "Photos", URL = "<https://gganakin.github.io/my-blog/photos/>"}
+  ]
+
+[params]
+  # dir name of your blog content (default is `content/posts`)
+  contentTypeName = "posts"
+  # description abou this website
+  description = "There is only one thing in the world worse than being talked about, and that is not being talked about."
+
+[params.valine]
+  enable = false
+    appId = ''
+    appKey = ''
+    placeholder = '既然来了，那就留个痕迹吧~'
+    visitor = true
