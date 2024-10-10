@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.129.0">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Seurat &middot; My New Hugo Site</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://localhost:1313/"><h1>My New Hugo Site</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://localhost:1313/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2024. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Seurat</h1>
+  <time datetime=2024-08-02T14:40:58&#43;0800 class="post-date">Fri, Aug 2, 2024</time>
+  <p>因为一些莫名其妙的经历，感觉心态上有些起伏。</p>
+<p>最近开始接触单细胞的数据项目，之前没有做过这些内容，现在做一些记录</p>
+<h1 id="1数据下机">1、数据下机</h1>
+<p>基础的数据下机之后呢，其实10X已经将所有的分析流程包装好在cellranger中了。目前涉及到了不同的数据5_mRNA，TCR还有BCR建库。我其实不太懂是不是需要不同的处理方式。目前5_mRNA建库数据我使用的是count模块。TCR以及BCR建库数据使用的是VDJ模块。还可以用multi模块。但是我没有用过:laughing:</p>
+<p><strong>count 模块</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>/path/to/cellranger count --id<span style="color:#f92672">=</span>run_count_SAMPLE_ID --fastqs<span style="color:#f92672">=</span>/path/to/sample/fastq/dir --sample<span style="color:#f92672">=</span>SAMPLE_ID --transcriptome<span style="color:#f92672">=</span>refdata-gex-GRCh38-2020-A --localcores<span style="color:#f92672">=</span><span style="color:#ae81ff">12</span>
+</span></span></code></pre></div><p><strong>vdj 模块</strong></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>/path/to/cellranger vdj --id<span style="color:#f92672">=</span>run_count_SAMPLE_ID --fastqs<span style="color:#f92672">=</span>/path/to/sample/fastq/dir --sample<span style="color:#f92672">=</span>SAMPLE_ID --reference<span style="color:#f92672">=</span>refdata-cellranger-vdj-GRCh38-alts-ensembl-5.0.0 --localcores<span style="color:#f92672">=</span><span style="color:#ae81ff">24</span>
+</span></span></code></pre></div><p>最后输出来的都大差不差。</p>
+<p>后续处理掉的数据是中途接手的，之前的处理脚本增加了***&ndash;force-cells*** 参数，旨在通过调整细胞数量获得期望的效果。</p>
+<h1 id="2-seurat处理">2、 Seurat处理</h1>
+<p>数据是中途接手的，看了最后的web报告，其实好像是用sccancer进行批量处理的，看了一下安装方式，我自己没有实操过。
+基于scCancer就可以完成基本所有的基础操作了，但是因为版本兼容的问题，只能把sccancer拆开来使用，首先对不起原作者</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggExtra)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggplot2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Matrixs)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(cowplot)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(dplyr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggExtra)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggplot2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(grDevices)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(grid)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(gridExtra)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(GSVA)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(harmony)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(knitr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(markdown)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Matrix)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(methods)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(NNLM)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(pheatmap)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(reshape2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(rliger)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(R.utils)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(scds)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Seurat)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(SingleCellExperiment)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(SoupX)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(stats)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(stringr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(survival)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(survminer)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(utils)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span>(<span style="color:#e6db74">&#34;/path/to/scCancer/R/utils.R&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span>(<span style="color:#e6db74">&#34;/path/to/scCancer/R/scCombination.R&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span>(<span style="color:#e6db74">&#34;/path/to/scCancer/R/scStatistics.R&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">source</span>(<span style="color:#e6db74">&#34;/path/to/scCancer/R/scAnnotation.R&#34;</span>)
+</span></span></code></pre></div><p>先加载一些需要用的功能模块啥的，然后根据cellranger的输出文件，生成seurat对象，然后对数据进行质控，然后进行降维，然后进行聚类，然后进行可视化，最后进行注释。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#75715e">## 执行单样本的统计分析</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">getwd</span>()
+</span></span><span style="display:flex;"><span>samplename <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;samplename&#34;</span>  <span style="color:#75715e">## 分析的样本名称</span>
+</span></span><span style="display:flex;"><span>dataPath <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;dataPath&#34;</span>  <span style="color:#75715e">## cellranger输出文件路径</span>
+</span></span><span style="display:flex;"><span>savepath <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;statpath&#34;</span>  <span style="color:#75715e">## 分析结果保存路径</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">runScStatistics</span>(dataPath<span style="color:#f92672">=</span>dataPath,savePath<span style="color:#f92672">=</span>savepath,sampleName<span style="color:#f92672">=</span>samplename,species<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;mouse&#34;</span>)
+</span></span></code></pre></div><p>可以通过循环等方式完成单样本的所有的统计</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>dataPath <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;dataPath&#34;</span>      
+</span></span><span style="display:flex;"><span>statPath <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;statpath&#34;</span> <span style="color:#75715e">###  统计分析结果路径  </span>
+</span></span><span style="display:flex;"><span>savePath <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;annoPath&#34;</span>    
+</span></span><span style="display:flex;"><span>sampleName <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;samplename&#34;</span>   
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Run scAnnotation</span>
+</span></span><span style="display:flex;"><span>anno.results <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">runScAnnotation</span>(
+</span></span><span style="display:flex;"><span>    dataPath <span style="color:#f92672">=</span> dataPath,
+</span></span><span style="display:flex;"><span>    statPath <span style="color:#f92672">=</span> statPath,
+</span></span><span style="display:flex;"><span>    species <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;mouse&#34;</span>,
+</span></span><span style="display:flex;"><span>    savePath <span style="color:#f92672">=</span> savePath,
+</span></span><span style="display:flex;"><span>    sampleName <span style="color:#f92672">=</span> sampleName,
+</span></span><span style="display:flex;"><span>    geneSet.method <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;average&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>单样本的注释也完成了，可以通过harmony进行数据合并</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">options</span>(Seurat.object.assay.version <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;v3&#39;</span> <span style="color:#75715e">### 版本兼容问题</span>
+</span></span><span style="display:flex;"><span>single.savePaths <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample1/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample2/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample3/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample4/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample5/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample6/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample7/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample8/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample9/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample10/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample11/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample12/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample13/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample14/annot/data&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;/path/to/sample5/annot/data&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>sampleNames <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;sample1&#34;</span>,<span style="color:#e6db74">&#34;sample2&#34;</span>,<span style="color:#e6db74">&#34;sample3&#34;</span>,<span style="color:#e6db74">&#34;sample4&#34;</span>,<span style="color:#e6db74">&#34;sample5&#34;</span>,<span style="color:#e6db74">&#34;sample6&#34;</span>,<span style="color:#e6db74">&#34;sample7&#34;</span>,<span style="color:#e6db74">&#34;sample8&#34;</span>,<span style="color:#e6db74">&#34;sample9&#34;</span>,<span style="color:#e6db74">&#34;sample10&#34;</span>,<span style="color:#e6db74">&#34;sample11&#34;</span>,<span style="color:#e6db74">&#34;sample12&#34;</span>,<span style="color:#e6db74">&#34;sample13&#34;</span>,<span style="color:#e6db74">&#34;sample14&#34;</span>,<span style="color:#e6db74">&#34;sample15&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>savePath <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;/path/to/merge&#34;</span>
+</span></span><span style="display:flex;"><span>combName <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;merge15&#34;</span> 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>comb.method <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;Harmony&#34;</span>
+</span></span><span style="display:flex;"><span>comb.results <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">runScCombination</span>(
+</span></span><span style="display:flex;"><span>    single.savePaths <span style="color:#f92672">=</span> single.savePaths, 
+</span></span><span style="display:flex;"><span>    sampleNames <span style="color:#f92672">=</span> sampleNames, 
+</span></span><span style="display:flex;"><span>    savePath <span style="color:#f92672">=</span> savePath, 
+</span></span><span style="display:flex;"><span>    combName <span style="color:#f92672">=</span> combName,
+</span></span><span style="display:flex;"><span>    comb.method <span style="color:#f92672">=</span> comb.method
+</span></span><span style="display:flex;"><span>)    
+</span></span></code></pre></div><p>OK! 到此基础分析就结束了，默认会以0.8的resolution进行聚类，最终会在savePath下面生成一个expr.RDS就是保存好的分析结果。一般还会需要生成loupe文件用于简单的可视化以及配合分析</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(loupeR)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Seurat)
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">readRDS</span>(<span style="color:#e6db74">&#34;/path/to/expr.RDS&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">create_loupe_from_seurat</span>(data,executable_path<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;executable&#34;</span>) <span style="color:#75715e">### 这里 executable_path 指的是10X官方提供的可执行程序。</span>
+</span></span></code></pre></div>
+</div>
+
+
+    </main>
+
+    
+  </body>
+</html>

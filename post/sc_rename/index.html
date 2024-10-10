@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="zh-CN" lang="zh-CN">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+  <link href="https://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="generator" content="Hugo 0.129.0">
+
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Sc_rename &middot; My New Hugo Site</title>
+  <meta name="description" content="" />
+
+  
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/print.css" media="print">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/poole.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/syntax.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:1313/css/hyde.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Abril+Fatface|PT+Sans:400,400i,700">
+
+
+  
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/apple-touch-icon-144-precomposed.png">
+  <link rel="shortcut icon" href="/favicon.png">
+
+  
+  
+</head>
+
+  <body class=" ">
+  <aside class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <a href="http://localhost:1313/"><h1>My New Hugo Site</h1></a>
+      <p class="lead">
+      An elegant open source and mobile first theme for <a href="http://hugo.spf13.com">hugo</a> made by <a href="http://twitter.com/mdo">@mdo</a>. Originally made for Jekyll.
+      </p>
+    </div>
+
+    <nav>
+      <ul class="sidebar-nav">
+        <li><a href="http://localhost:1313/">Home</a> </li>
+        
+      </ul>
+    </nav>
+
+    <p>&copy; 2024. All rights reserved. </p>
+  </div>
+</aside>
+
+    <main class="content container">
+    <div class="post">
+  <h1>Sc_rename</h1>
+  <time datetime=2024-09-18T16:53:21&#43;0800 class="post-date">Wed, Sep 18, 2024</time>
+  <p>本篇主要记录从拿到各cluster开始对各cluster进行重命名，并且出具细胞比例箱线图的分析。</p>
+<h2 id="增加样本以及分组信息">增加样本以及分组信息</h2>
+<p>还是基于Seurat来执行这些分析。一般还会需要出具一些细胞数量统计等图片</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Seurat)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(umap)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggsci)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggplot2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggpubr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(showtext)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(openxlsx)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(dplyr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(openxlsx)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(reshape2)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">setwd</span>(<span style="color:#e6db74">&#34;workdir&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(future)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">plan</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">plan</span>(<span style="color:#e6db74">&#34;multicore&#34;</span>, workers <span style="color:#f92672">=</span> <span style="color:#ae81ff">24</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">plan</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">options</span>(bitmapType<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;cairo&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">readRDS</span>(<span style="color:#e6db74">&#34;../expr.RDS&#34;</span>) 
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">### 样本名字重命名</span>
+</span></span><span style="display:flex;"><span>new_name <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;DW0042C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_S1&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0043C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_S2&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0044C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_S3&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0045C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_R+Ful1&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0046C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_R+Ful2&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0047C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_R+Ful3&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0048C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_R1&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0049C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_R2&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;DW0050C1L1_fc&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Met_R3&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;T230794C1L1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_CK1&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;T230795C1L1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_CK2&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;T230796C1L1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_CK3&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;T230797C1L1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_Ful1&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;T230798C1L1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_Ful2&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;T230799C1L1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_Ful3&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Idents</span>(data) <span style="color:#f92672">&lt;-</span> data<span style="color:#f92672">$</span>sample.ident
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RenameIdents</span>(data, new_name)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data<span style="color:#f92672">$</span>samplename <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">Idents</span>(data)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">### 增加分组信息</span>
+</span></span><span style="display:flex;"><span>groupName <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;Met_S1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;S&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_S2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;S&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_S3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;S&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_R+Ful1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;R_Ful&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_R+Ful2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;R_Ful&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_R+Ful3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;R_Ful&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_R1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;R&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_R2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;R&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Met_R3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;R&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Pri_CK1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_CK&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Pri_CK2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_CK&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Pri_CK3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_CK&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Pri_Ful1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_Ful&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Pri_Ful2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_Ful&#34;</span>,
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;Pri_Ful3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Pri_Ful&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RenameIdents</span>(data, groupName)
+</span></span><span style="display:flex;"><span>data<span style="color:#f92672">$</span>groupName <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">Idents</span>(data)
+</span></span></code></pre></div><p>在实验操作过程中，血小板红细胞等的都需要去掉，可能有一些实验无法完全去除，需要在此步骤将其去掉，另外游戏细胞可能表达了多个类型细胞的marker，同样需要去掉</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">Idents</span>(data) <span style="color:#f92672">&lt;-</span> data<span style="color:#f92672">$</span>seurat_clusters
+</span></span><span style="display:flex;"><span><span style="color:#75715e">### 去除不需要的cluster</span>
+</span></span><span style="display:flex;"><span>scdata <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">subset</span>(data,idents <span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;41&#34;</span>,<span style="color:#e6db74">&#34;29&#34;</span>,<span style="color:#e6db74">&#34;35&#34;</span>,<span style="color:#e6db74">&#34;40&#34;</span>),invert <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>new.cluster.ids <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;AM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;28&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;AM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;33&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;AM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;42&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;AM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;11&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;B&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;32&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;B&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;36&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;B&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;21&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;CAF&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;10&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cDC&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;19&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cDC&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;4&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;27&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;endothelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;38&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;endothelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;7&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;endothelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;22&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;endothelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;26&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;epithelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;34&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;epithelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;39&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;epithelium&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;14&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;erythroid&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;24&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;erythroid&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Fibroblast&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;15&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Fibroblast&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;23&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Fibroblast&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;12&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;IM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;6&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ncM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;9&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ncM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;30&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;ncM&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;0&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Neutripil&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Neutripil&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;13&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Neutripil&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;20&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;NK&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;37&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;pDC&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;25&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;platelet&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;8&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;T&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;16&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;T&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;17&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;T&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;18&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;T&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;31&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;T&#34;</span>,
+</span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;5&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;γδT/ILC&#34;</span>
+</span></span><span style="display:flex;"><span>                     )
+</span></span><span style="display:flex;"><span>scedata <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RenameIdents</span>(scdata, new.cluster.ids)
+</span></span><span style="display:flex;"><span>scedata<span style="color:#f92672">$</span>celltype <span style="color:#f92672">&lt;-</span> scedata<span style="color:#f92672">@</span>active.ident
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>scedata<span style="color:#f92672">$</span>groupName <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">factor</span>(x <span style="color:#f92672">=</span> scedata<span style="color:#f92672">$</span>groupName, levels <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;Group_R&#34;</span>, <span style="color:#e6db74">&#34;Group_S&#34;</span>,<span style="color:#e6db74">&#34;Group_R_Ful&#34;</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">saveRDS</span>(scdata,<span style="color:#e6db74">&#34;rename.RDS&#34;</span>)
+</span></span></code></pre></div><p>根据重新定义的细胞类型绘制图像</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">### 2225 x 728</span>
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">DimPlot</span>(scedata,split.by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;groupName&#34;</span>,label <span style="color:#f92672">=</span> T) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_ucscgb</span>() <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_fill_ucscgb</span>() <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> p, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_group.pdf&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">22</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>(<span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> p, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_group.png&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">22</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>, type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># UMAPPlot(scedata,label = T ) + scale_color_ucscgb()</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># UMAPPlot(scedata,label = T ) + scale_color_ucscgb()</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># save(scedata, file = &#34;scedata.RData&#34;)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>colors_dutch <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#FFC312&#39;</span>,<span style="color:#e6db74">&#39;#C4E538&#39;</span>,<span style="color:#e6db74">&#39;#12CBC4&#39;</span>,<span style="color:#e6db74">&#39;#FDA7DF&#39;</span>,<span style="color:#e6db74">&#39;#ED4C67&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#F79F1F&#39;</span>,<span style="color:#e6db74">&#39;#A3CB38&#39;</span>,<span style="color:#e6db74">&#39;#1289A7&#39;</span>,<span style="color:#e6db74">&#39;#D980FA&#39;</span>,<span style="color:#e6db74">&#39;#B53471&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#EE5A24&#39;</span>,<span style="color:#e6db74">&#39;#009432&#39;</span>,<span style="color:#e6db74">&#39;#0652DD&#39;</span>,<span style="color:#e6db74">&#39;#9980FA&#39;</span>,<span style="color:#e6db74">&#39;#833471&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#EA2027&#39;</span>,<span style="color:#e6db74">&#39;#006266&#39;</span>,<span style="color:#e6db74">&#39;#1B1464&#39;</span>,<span style="color:#e6db74">&#39;#5758BB&#39;</span>,<span style="color:#e6db74">&#39;#6F1E51&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#40407a&#39;</span>,<span style="color:#e6db74">&#39;#706fd3&#39;</span>,<span style="color:#e6db74">&#39;#f7f1e3&#39;</span>,<span style="color:#e6db74">&#39;#34ace0&#39;</span>,<span style="color:#e6db74">&#39;#33d9b2&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#2c2c54&#39;</span>,<span style="color:#e6db74">&#39;#474787&#39;</span>,<span style="color:#e6db74">&#39;#aaa69d&#39;</span>,<span style="color:#e6db74">&#39;#227093&#39;</span>,<span style="color:#e6db74">&#39;#218c74&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#ff5252&#39;</span>,<span style="color:#e6db74">&#39;#ff793f&#39;</span>,<span style="color:#e6db74">&#39;#d1ccc0&#39;</span>,<span style="color:#e6db74">&#39;#ffb142&#39;</span>,<span style="color:#e6db74">&#39;#ffda79&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#b33939&#39;</span>,<span style="color:#e6db74">&#39;#cd6133&#39;</span>,<span style="color:#e6db74">&#39;#84817a&#39;</span>,<span style="color:#e6db74">&#39;#cc8e35&#39;</span>,<span style="color:#e6db74">&#39;#ccae62&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;#E64B35&#34;</span>, <span style="color:#e6db74">&#34;#4DBBD5&#34;</span>, <span style="color:#e6db74">&#34;#00A087&#34;</span>, <span style="color:#e6db74">&#34;#3C5488&#34;</span>, <span style="color:#e6db74">&#34;#F39B7F&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;#8491B4&#34;</span>, <span style="color:#e6db74">&#34;#91D1C2&#34;</span>, <span style="color:#e6db74">&#34;#DC0000&#34;</span>, <span style="color:#e6db74">&#34;#7E6148&#34;</span>, <span style="color:#e6db74">&#34;#B09C85&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">DimPlot</span>(scdata,reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap&#34;</span>,split.by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;groupName&#34;</span>,label <span style="color:#f92672">=</span> T,pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.5</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> p, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_group.pdf&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> p, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_group.png&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>, type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>q <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">DimPlot</span>(scdata,reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap&#34;</span>,label <span style="color:#f92672">=</span> T,pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.5</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> q, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_all.pdf&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> q, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_all.png&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>, type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">DimPlot</span>(scdata,reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne&#34;</span>,split.by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;groupName&#34;</span>,label <span style="color:#f92672">=</span> T,pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.5</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> p, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne_group.pdf&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> p, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne_group.png&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>, type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>q <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">DimPlot</span>(scdata,reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne&#34;</span>,label <span style="color:#f92672">=</span> T,pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.5</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> q, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne_all.pdf&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(plot <span style="color:#f92672">=</span> q, filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tnse_all.png&#34;</span>, width <span style="color:#f92672">=</span> <span style="color:#ae81ff">11</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>, type<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span></code></pre></div><p>统计细胞比例</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#75715e">## cell_count</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>cell_count <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">table</span>(<span style="color:#a6e22e">Idents</span>(scdata),scdata<span style="color:#f92672">$</span>samplename)
+</span></span><span style="display:flex;"><span>df <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">dcast</span>(<span style="color:#a6e22e">as.data.frame</span>(cell_count), Var1 <span style="color:#f92672">~</span> Var2)
+</span></span><span style="display:flex;"><span>col_sums <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">colSums</span>(df[, <span style="color:#ae81ff">-1</span>])
+</span></span><span style="display:flex;"><span>df_transformed <span style="color:#f92672">&lt;-</span> df
+</span></span><span style="display:flex;"><span>df_transformed[, <span style="color:#ae81ff">-1</span>] <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">lapply</span>(df[, <span style="color:#ae81ff">-1</span>], <span style="color:#66d9ef">function</span>(x) x <span style="color:#f92672">/</span> <span style="color:#a6e22e">sum</span>(x))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>wb <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">createWorkbook</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">addWorksheet</span>(wb, <span style="color:#e6db74">&#34;count&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">writeData</span>(wb, <span style="color:#e6db74">&#34;count&#34;</span>, cell_count, colNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>, rowNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">addWorksheet</span>(wb, <span style="color:#e6db74">&#34;pct&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">writeData</span>(wb, <span style="color:#e6db74">&#34;pct&#34;</span>, df_transformed, colNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>, rowNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">saveWorkbook</span>(wb, <span style="color:#e6db74">&#34;cell_count.xlsx&#34;</span>, overwrite <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span></code></pre></div><p>还需要针对细胞比例绘制箱线图</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">read.xlsx</span>(<span style="color:#e6db74">&#34;cell_count.xlsx&#34;</span>,sheet <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;pct&#34;</span>,rowNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span><span style="display:flex;"><span>grp <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">data.frame</span>(sample <span style="color:#f92672">=</span> <span style="color:#a6e22e">colnames</span>(data),group<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;Pri_CK&#34;</span>,<span style="color:#e6db74">&#34;Pri_CK&#34;</span>,<span style="color:#e6db74">&#34;Pri_CK&#34;</span>,<span style="color:#e6db74">&#34;Pri_Ful&#34;</span>,<span style="color:#e6db74">&#34;Pri_Ful&#34;</span>,<span style="color:#e6db74">&#34;Pri_Ful&#34;</span>,<span style="color:#e6db74">&#34;R_Ful&#34;</span>,<span style="color:#e6db74">&#34;R_Ful&#34;</span>,<span style="color:#e6db74">&#34;R_Ful&#34;</span>,<span style="color:#e6db74">&#34;R&#34;</span>,<span style="color:#e6db74">&#34;R&#34;</span>,<span style="color:#e6db74">&#34;R&#34;</span>,<span style="color:#e6db74">&#34;S&#34;</span>,<span style="color:#e6db74">&#34;S&#34;</span>,<span style="color:#e6db74">&#34;S&#34;</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data<span style="color:#f92672">$</span>celltype <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">rownames</span>(data)
+</span></span><span style="display:flex;"><span>data_l <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">melt</span>(data,id.vars<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;celltype&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">colnames</span>(data_l) <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;celltype&#34;</span>,<span style="color:#e6db74">&#34;sample&#34;</span>,<span style="color:#e6db74">&#34;pct&#34;</span>)
+</span></span><span style="display:flex;"><span>draw_data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">left_join</span>(data_l,grp,by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;sample&#34;</span>)
+</span></span><span style="display:flex;"><span>draw_data<span style="color:#f92672">$</span>group <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">factor</span>(x <span style="color:#f92672">=</span> draw_data<span style="color:#f92672">$</span>group, levels <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;R&#34;</span>, <span style="color:#e6db74">&#34;R_Ful&#34;</span>,<span style="color:#e6db74">&#34;S&#34;</span>,<span style="color:#e6db74">&#34;Pri_CK&#34;</span>,<span style="color:#e6db74">&#34;Pri_Ful&#34;</span>))
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># dir.create(&#34;boxplot_all&#34;)</span>
+</span></span><span style="display:flex;"><span>cells <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">rownames</span>(data)
+</span></span><span style="display:flex;"><span>combinations <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">combn</span>(<span style="color:#a6e22e">levels</span>(<span style="color:#a6e22e">as.factor</span>(draw_data<span style="color:#f92672">$</span>group)),<span style="color:#ae81ff">2</span>,simplify <span style="color:#f92672">=</span> F)
+</span></span><span style="display:flex;"><span>combination_list <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">lapply</span>(combinations, <span style="color:#66d9ef">function</span>(pair) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">c</span>(pair[1], pair[2])
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (i <span style="color:#66d9ef">in</span> cells) {
+</span></span><span style="display:flex;"><span>  df <span style="color:#f92672">&lt;-</span> draw_data<span style="color:#a6e22e">[which</span>(draw_data<span style="color:#f92672">$</span>celltype<span style="color:#f92672">==</span> i),]
+</span></span><span style="display:flex;"><span>  df<span style="color:#f92672">$</span>pct <span style="color:#f92672">&lt;-</span> df<span style="color:#f92672">$</span>pct <span style="color:#f92672">*</span> <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>  p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">ggplot</span>(df, <span style="color:#a6e22e">aes</span>(x <span style="color:#f92672">=</span> group,y <span style="color:#f92672">=</span> pct, color <span style="color:#f92672">=</span> group)) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">geom_boxplot</span>(outlier.shape <span style="color:#f92672">=</span> <span style="color:#66d9ef">NA</span>,lwd <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">geom_point</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">stat_boxplot</span>(geom <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;errorbar&#34;</span>,size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">labs</span>(x <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>, y <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Cell_percet/%&#34;</span>,
+</span></span><span style="display:flex;"><span>         title <span style="color:#f92672">=</span> i) <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">theme_bw</span>() <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">theme</span>(legend.position <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;none&#34;</span>, 
+</span></span><span style="display:flex;"><span>          plot.title <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>,hjust <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>          axis.text <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>),
+</span></span><span style="display:flex;"><span>          axis.title.y <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">14</span>),
+</span></span><span style="display:flex;"><span>          panel.grid <span style="color:#f92672">=</span><span style="color:#a6e22e">element_blank</span>(),panel.border<span style="color:#f92672">=</span><span style="color:#a6e22e">element_rect</span>(linewidth <span style="color:#f92672">=</span><span style="color:#ae81ff">1.5</span>)) <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">stat_compare_means</span>(comparisons <span style="color:#f92672">=</span> combination_list, method <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;t.test&#34;</span>,label <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;p.signif&#34;</span>) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">scale_color_aaas</span>() <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_fill_aaas</span>(alpha <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.6</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#66d9ef">if</span> (i <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;γδT/ILC&#34;</span>) {
+</span></span><span style="display:flex;"><span>    i <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;ILC&#34;</span>
+</span></span><span style="display:flex;"><span>  }
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ggsave</span>(p,filename<span style="color:#f92672">=</span><span style="color:#a6e22e">paste0</span>(<span style="color:#e6db74">&#34;boxplot/&#34;</span>, i, <span style="color:#e6db74">&#34;.png&#34;</span>),width <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>, type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ggsave</span>(p,filename<span style="color:#f92672">=</span><span style="color:#a6e22e">paste0</span>(<span style="color:#e6db74">&#34;boxplot/&#34;</span>, i, <span style="color:#e6db74">&#34;.pdf&#34;</span>),width <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>提取每个细胞类型的特征基因</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#75715e">## marker gene</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>all_markers <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">FindAllMarkers</span>(scdata, only.pos <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write.xlsx</span>(all_markers,<span style="color:#e6db74">&#34;allmarker_pos.xlsx&#34;</span>)
+</span></span></code></pre></div><p>还是需要导出loupe文件</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(loupeR)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">create_from_seurat</span>(scdata,executable_path<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;executable&#34;</span>)
+</span></span></code></pre></div>
+</div>
+
+
+    </main>
+
+    
+  </body>
+</html>
