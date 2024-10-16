@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>10X_cellranger | My New Hugo Site</title>
+<meta name="keywords" content="">
+<meta name="description" content="10X_cellranger">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/10x_cellranger/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.a558ac8f16837d1ca9780489fb47c199b58071c5c356b9c84d8acae50728cd7b.css" integrity="sha256-pVisjxaDfRypeASJ&#43;0fBmbWAccXDVrnITYrK5QcozXs=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/10x_cellranger/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="My New Hugo Site (Alt + H)">My New Hugo Site</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      10X_cellranger
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="35" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+    </h1>
+    <div class="post-description">
+      10X_cellranger
+    </div>
+    <div class="post-meta"><span title='2024-10-16 10:25:54 +0800 CST'>October 16, 2024</span>
+
+</div>
+  </header> 
+  <div class="post-content"><hr>
+<p>本篇用于记录接触的10X_mRNA数据，以及相关分析结果。</p>
+<ul>
+<li>cellranger count 模块的使用</li>
+<li>cellranger 结果文件的解释</li>
+</ul>
+<hr>
+<h1 id="数据下机及质控">数据下机及质控<a hidden class="anchor" aria-hidden="true" href="#数据下机及质控">#</a></h1>
+<p>10X 数据下机后还是简单的双端fastq文件，只需要使用cellranger就可以进行质控等的分析。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>/path/to/cellranger count --id<span style="color:#f92672">=</span>run_count_samplename <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --fastqs<span style="color:#f92672">=</span>/path/to/sample_fq_dir <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --sample<span style="color:#f92672">=</span>samplename <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --transcriptome<span style="color:#f92672">=</span>/path/to/transcriptome/dir <span style="color:#ae81ff">\
+</span></span></span><span style="display:flex;"><span><span style="color:#ae81ff"></span>  --localcores<span style="color:#f92672">=</span><span style="color:#ae81ff">12</span>
+</span></span></code></pre></div><p>cellranger及相关使用数据库的的下载链接为 <a href="https://www.10xgenomics.com/support/software/cell-ranger/downloads">cellranger download</a>
+历史版本的下家链接为<a href="https://www.10xgenomics.com/support/software/cell-ranger/downloads/previous-versions">previous versions</a></p>
+<h1 id="结果解释">结果解释<a hidden class="anchor" aria-hidden="true" href="#结果解释">#</a></h1>
+<p>web_summary.html 文件为总览结果
+以下结果来自于<a href="https://zhuanlan.zhihu.com/p/390516422">知乎分享</a></p>
+<p>该网页的结果分成了summary和analysis两部分，</p>
+<h2 id="1-summary">1. summary<a hidden class="anchor" aria-hidden="true" href="#1-summary">#</a></h2>
+<h3 id="1-异常结果警告">1. 异常结果警告<a hidden class="anchor" aria-hidden="true" href="#1-异常结果警告">#</a></h3>
+<p>如果数据中存在异常，在网页的头部会给黄色的警告框，如下所示</p>
+<p><img loading="lazy" src="cellranger_warning.png" alt="alt text"  />
+
+点击Details, 可以看到详细的信息，上图显示RNA reads的Q30比例太低，理想情况是大于65%， 而实际的数据只有64.4%。</p>
+<h3 id="2细胞和基因数目的评估">2.细胞和基因数目的评估<a hidden class="anchor" aria-hidden="true" href="#2细胞和基因数目的评估">#</a></h3>
+<p>对样本中的细胞和表达的基因个数评估，同时还给出了barcode, index, umi, RNA reads不同序列的Q30， 示意如下
+<img loading="lazy" src="cell_number.png" alt="alt text"  />
+
+其中：</p>
+<table>
+<thead>
+<tr>
+<th>Items</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Estimated number of cells</td>
+<td>样本测到的细胞数</td>
+</tr>
+<tr>
+<td>Mean reads per cell</td>
+<td>每个细胞测到的平均reads</td>
+</tr>
+<tr>
+<td>Mean reads per cell</td>
+<td>每个细胞基因数的中位数</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sequencing</strong>中：</p>
+<table>
+<thead>
+<tr>
+<th>Items</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Number of reads</td>
+<td>测到的总read数目</td>
+</tr>
+<tr>
+<td>Valid barcodes</td>
+<td>UMI校正后匹配的UMI数量</td>
+</tr>
+</tbody>
+</table>
+<p>关于<!-- raw HTML omitted --><strong>Sequencing saturation</strong><!-- raw HTML omitted -->：测序饱和度，一般60-80%比较合适（阈值范围可以适当调整，但是高于70%/80%左右绝对OK）</p>
+<p><strong>如果测到的细胞数多，但是每个细胞里面的平均reads数少，那么饱和度就不高，反之，饱和度高。但也不是越高越好，到达80%左右就可以代表整个样本了</strong></p>
+<p>还有一些Q30 的数据指标</p>
+<p>认为要一般要大于65%，少于这个比例的话，这个页面会报错，页面上方有黄色的warning提示。关于这个阈值问题还有一些回复在这个链接中有涉及到一些如何通过cellranger count出来的结果来判断数据质量，回复者贴出来的答案是 <strong>Median genes per cell&gt; 1000，Valid barcode &gt; 90%，Q30 &gt; 85%，Fraction reads &gt; 70%</strong></p>
+<h3 id="3比对比例统计">3.比对比例统计<a hidden class="anchor" aria-hidden="true" href="#3比对比例统计">#</a></h3>
+<p>统计reads的比对比例，同时给出比对到基因间区，外显子，内含子的比例，示意如下
+<img loading="lazy" src="mapping_ratio.png" alt="mapping_ratio"  />
+
+这一项的报告就是对cellranger count程序中</p>
+<p>&ndash;transcriptome=refdata-cellranger 的反馈报告，比对的是人类基因组hg38/小鼠基因组/mm10。</p>
+<table>
+<thead>
+<tr>
+<th>Items</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reads mapped to genome</td>
+<td>比对到选定基因组的reads</td>
+</tr>
+<tr>
+<td>Reands mapped confidently to genome</td>
+<td>仅仅比对到基因组的reads，如果一条reads既可以比对到外显子区又可以比对到非外显子区，那么算比对到了其中一个外显子区</td>
+</tr>
+<tr>
+<td>Reads mapped confidently to intergenic regions</td>
+<td>比对到基因组的基因间区域</td>
+</tr>
+<tr>
+<td>Reads mapped confidently to intronic regions</td>
+<td>比对到内含子区域</td>
+</tr>
+<tr>
+<td>Reads mapped confidently to exonic regions</td>
+<td>比对到外显子区域</td>
+</tr>
+<tr>
+<td>Reads mapped confidently to transcriptome</td>
+<td>比对到转录组的reads，这些读数可以用来UMI的计数</td>
+</tr>
+<tr>
+<td>Reads mapped antisense to gene</td>
+<td>测到的总read数目</td>
+</tr>
+<tr>
+<td>Number of reads</td>
+<td>比对到基因的相反的reads</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4细胞数目评估详细信息">4.细胞数目评估详细信息<a hidden class="anchor" aria-hidden="true" href="#4细胞数目评估详细信息">#</a></h3>
+<p>比较重要的就是这个曲线图，图中横轴是barcodes，纵轴是UMI数量，绿色线条代表真实的检测到的真实细胞数。通过barcode上的UMI标签分布来评估细胞数目，深蓝色代表细胞，灰色代表背景，示意如下。在前期磁珠（bead）与细胞形成油包水的结构过程中，会存在没有把细胞包进去的情况，这时候的油包水结构里面就只有磁珠和一些barcode的序列，而cDNA的碱基序列一般都是barcode碱基序列的10倍以上，就是由此来确定哪些是真实的细胞，哪些是background。
+<img loading="lazy" src="cells.png" alt="cells"  />
+</p>
+<table>
+<thead>
+<tr>
+<th>Items</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Estimated number of cells</td>
+<td>比对到选定基因组的reads</td>
+</tr>
+<tr>
+<td>Estimated number of cells</td>
+<td>样本测到的细胞数</td>
+</tr>
+<tr>
+<td>Fraction reads in cells</td>
+<td>valid-UMI的质量分数，代表与细胞相关的UMI可靠地比对到基因组，一般要在70%及以上，否则数据质量就不好</td>
+</tr>
+<tr>
+<td>Mean reads per cell</td>
+<td>每个细胞测到的平均reads</td>
+</tr>
+<tr>
+<td>Median genes per cell</td>
+<td>每个细胞的中间基因数</td>
+</tr>
+<tr>
+<td>Total genes detected</td>
+<td>测到的总基因数,至少有一条UMI</td>
+</tr>
+<tr>
+<td>Median UMI counts per cell</td>
+<td>细胞UMI数量的中间值</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5样本基本信息">5.样本基本信息<a hidden class="anchor" aria-hidden="true" href="#5样本基本信息">#</a></h3>
+<p>样本名称，使用的参考基因组等信息，示意如下</p>
+<p><img loading="lazy" src="image.png" alt="alt text"  />
+</p>
+<h2 id="2anakysis-部分结果">2.anakysis 部分结果<a hidden class="anchor" aria-hidden="true" href="#2anakysis-部分结果">#</a></h2>
+<h3 id="1-细胞表达量分布的t-sne图">1. 细胞表达量分布的t-SNE图<a hidden class="anchor" aria-hidden="true" href="#1-细胞表达量分布的t-sne图">#</a></h3>
+<p>UMI标签用于标识转录本，UMI的count值就是转录本的表达量，采用tSNE降维算法， 对细胞的表达量进行可视化，每个点代表一个细胞，示意如下
+<img loading="lazy" src="tsne.png" alt="alt text"  />
+</p>
+<h3 id="2-细胞亚型">2. 细胞亚型<a hidden class="anchor" aria-hidden="true" href="#2-细胞亚型">#</a></h3>
+<p>根据表达量对细胞进行聚类，从而识别细胞亚型，提供了两种聚类算法graph-based和k-means, 示意如下
+<img loading="lazy" src="subtype.png" alt="alt text"  />
+
+通过右上角的下拉按钮，可以查看不同的聚类结果，结果展示依然是用的t-SNE图，只不过根据聚类结果对颜色进行了调整，属于同一类的细胞用相同颜色表示。</p>
+<h3 id="3-基因差异表达分析">3. 基因差异表达分析<a hidden class="anchor" aria-hidden="true" href="#3-基因差异表达分析">#</a></h3>
+<p>对cluster下的基因进行差异分析，将细胞分成了该cluster和其他cluster两类，然后进行差异分析，结果如下所示
+<img loading="lazy" src="expr_table.png" alt="alt text"  />
+</p>
+<h3 id="4-饱和度评估">4. 饱和度评估<a hidden class="anchor" aria-hidden="true" href="#4-饱和度评估">#</a></h3>
+<p>对reads抽样，观察不同抽样条件下检测到的转录本数量占检测到的所有转录本的比例，并绘制如下曲线
+<img loading="lazy" src="saturation.png" alt="alt text"  />
+
+如果曲线末端区域平滑，说明测序接近饱和，再增加测序量，覆盖到的转录本数目也不会变化太多。</p>
+<p>对reads抽样，观察不同测序数据量情况下检测到的基因数目的分布，并绘制如下曲线
+<img loading="lazy" src="sampling.png" alt="alt text"  />
+
+如果曲线末端区域平滑，说明测序接近饱和，再增加测序量，检测到的基因数目也不会变化太多。</p>
+<h2 id="其他文件">其他文件<a hidden class="anchor" aria-hidden="true" href="#其他文件">#</a></h2>
+<p>网页提供了一个简单直观的查看结果的方式，但是很多细节还是需要到对应的文件中进行查找。网页中summary部分的结果保存在metrics_summary.csv文件中，analysis部分结果保存在名为analysis的文件夹下，该文件夹包含以下4个子目录。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>├── clustering
+</span></span><span style="display:flex;"><span>├── diffexp
+</span></span><span style="display:flex;"><span>├── pca
+</span></span><span style="display:flex;"><span>├── umap
+</span></span><span style="display:flex;"><span>└── tsne
+</span></span></code></pre></div><p>pca是表达量的PCA分析结果，tsne是表达量的t-SNE分析结果，umap是表达量的umap分析结果，diffexp是差异分析的结果，clustering是聚类的结果，每个聚类结果都提供了一个cluster.csv文件，内容示意如下</p>
+<table>
+<thead>
+<tr>
+<th>cellID</th>
+<th>clusterID</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AAACCTGCAATGTAAG-1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>可以看到barcode和cluster的对应关系，barcode用于标识细胞，这张表格反映的是细胞和cluster的对应关系。</p>
+<p>在结果目录，可以看到如下两个目录：</p>
+<p>raw_feature_bc_matrix
+filtered_gene_bc_matrices
+这两个目录下的内容是类似的，raw目录下是所有的barcode信息，包含了细胞相关的barcoed和背景barcode,而filter目录下只包含细胞相关的barcode信息，内容如下</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>├── barcodes.tsv
+</span></span><span style="display:flex;"><span>├── genes.tsv
+</span></span><span style="display:flex;"><span>└── matrix.mtx
+</span></span></code></pre></div><p>后缀为mtx的文件记录的就是基因的表达量信息，可以导入R或者python中查看，也可以通过如下命令转换为csv格式</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>cellranger mat2csv
+</span></span><span style="display:flex;"><span>outs/filtered_gene_bc_matrices
+</span></span><span style="display:flex;"><span>sample.count.csv
+</span></span></code></pre></div><p>除了用MEX格式来存储表达量数据，还使用用HDF5的格式来记录表达量信息，对应以下两个文件</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>raw_feature_bc_matrix.h5
+</span></span><span style="display:flex;"><span>filtered_feature_bc_matrix.h5
+</span></span></code></pre></div><p>在输出目录下，还包含以下几个文件</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>possorted_genome_bam.bam
+</span></span><span style="display:flex;"><span>possorted_genome_bam.bam.bai
+</span></span><span style="display:flex;"><span>molecule_info.h5
+</span></span><span style="display:flex;"><span>cloupe.cloupe
+</span></span></code></pre></div><p>前两个是比对产生的bam文件和索引，第三个文件是实验相关的文库，GEM，barcode表达量等信息的HDF5格式的文件，cloupe文件则是Loupe Cell Browser的输入文件，该软件是官方提供的专门用于查看数据分析结果的软件, 后续会介绍该软件的使用。</p>
+<ol>
+<li>下游seurat/scanpy分析的输入数据
+得到cellranger分析结果后，下游我们需要将filtered_gene_bc_matrices 文件夹作为输入文件输入到seurat或者scanpy。</li>
+</ol>
+<p>filtered_gene_bc_matrices 文件夹包含三个文件：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>barcodes.tsv
+</span></span><span style="display:flex;"><span>features.tsv
+</span></span><span style="display:flex;"><span>matrix.mtx
+</span></span></code></pre></div><p>主要包括seurat的数据输入，构建object，二次质控。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:1313/">My New Hugo Site</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
