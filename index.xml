@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>My New Hugo Site</title>
+    <title>Welcome to Darth Vader's github page</title>
     <link>https://gganakin.github.io/</link>
-    <description>Recent content on My New Hugo Site</description>
+    <description>Recent content on Welcome to Darth Vader's github page</description>
     <generator>Hugo -- 0.129.0</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 16 Oct 2024 11:37:57 +0800</lastBuildDate>
