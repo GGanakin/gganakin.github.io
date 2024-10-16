@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>My New Hugo Site</title>
-    <link>http://localhost:1313/</link>
+    <link>https://gganakin.github.io/</link>
     <description>Recent content on My New Hugo Site</description>
     <generator>Hugo -- 0.129.0</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 16 Oct 2024 11:37:57 +0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://gganakin.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>10X_scCancer</title>
-      <link>http://localhost:1313/posts/10x_sccancer/</link>
+      <link>https://gganakin.github.io/posts/10x_sccancer/</link>
       <pubDate>Wed, 16 Oct 2024 11:37:57 +0800</pubDate>
-      <guid>http://localhost:1313/posts/10x_sccancer/</guid>
+      <guid>https://gganakin.github.io/posts/10x_sccancer/</guid>
       <description></description>
     </item>
     <item>
       <title>10X_cellranger</title>
-      <link>http://localhost:1313/posts/10x_cellranger/</link>
+      <link>https://gganakin.github.io/posts/10x_cellranger/</link>
       <pubDate>Wed, 16 Oct 2024 10:25:54 +0800</pubDate>
-      <guid>http://localhost:1313/posts/10x_cellranger/</guid>
+      <guid>https://gganakin.github.io/posts/10x_cellranger/</guid>
       <description>10X_cellranger</description>
     </item>
     <item>
       <title>Hello</title>
-      <link>http://localhost:1313/posts/hello/</link>
+      <link>https://gganakin.github.io/posts/hello/</link>
       <pubDate>Wed, 16 Oct 2024 10:25:04 +0800</pubDate>
-      <guid>http://localhost:1313/posts/hello/</guid>
+      <guidhttps://gganakin.github.io/posts/hello/</guid>
       <description>hello world</description>
     </item>
   </channel>
