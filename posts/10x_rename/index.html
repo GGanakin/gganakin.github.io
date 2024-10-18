@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>10X_rename | My New Hugo Site</title>
+<meta name="keywords" content="">
+<meta name="description" content="本篇主要介绍针对挑选合适的分辨率(resolution)进行聚类以及不同的cluster提取特征基因后，如何对基因进行重新命名。
+在完成了sccancer的所有分析后，在combine(如果没有合并那么就是在ScAnno文件夹中)的目录中生产一个RDS文件，sccancer的聚类的resolution默认是0.8。
+一、clustree 选定聚类分辨率 这个工具可以根据不同resolution的设置的聚类结果绘制聚类树
+library(Seurat) library(clustree) data &lt;- readRDS(&#34;/path/to/your/expr.RDS&#34;) data &lt;- FindClusters( object = data, resolution = c(seq(0.1,1,0.1)) ) clustree(data@meta.data, prefix = &#34;RNA_snn_res.&#34;) 可以在图中看到不同的resolution，分群的变化情况。以此来确定适合的resolution。resolution&gt;0.7后cluster变化意义就不是很大。分多少群其实现在也不是就根据resolution就定死了，
+提取每个cluster的特征基因判断细胞类群才是最终的结果
+cluster聚类只是为了更好的分细胞类型。
+二、重新聚类，并提取cluster特征基因 我们定好了resolution(比如说0.8)，先载入R包读取数据文件,然配置一个颜色集，也可以直接使用ggsci中的颜色集。
+library(Seurat) library(ggplot2) library(dplyr) library(patchwork) library(SingleR) library(showtext) library(reshape2) library(openxlsx) library(loupeR) data &lt;- readRDS(&#34;/path/to/your/expr.RDS&#34;) res &lt;- 0.8 colors_dutch &lt;- c( &#39;#FFC312&#39;, &#39;#C4E538&#39;, &#39;#12CBC4&#39;, &#39;#FDA7DF&#39;, &#39;#ED4C67&#39;, &#39;#F79F1F&#39;, &#39;#A3CB38&#39;, &#39;#1289A7&#39;, &#39;#D980FA&#39;, &#39;#B53471&#39;, &#39;#EE5A24&#39;, &#39;#009432&#39;, &#39;#0652DD&#39;, &#39;#9980FA&#39;, &#39;#833471&#39;, &#39;#EA2027&#39;, &#39;#006266&#39;, &#39;#1B1464&#39;, &#39;#5758BB&#39;, &#39;#6F1E51&#39;, &#39;#40407a&#39;, &#39;#706fd3&#39;, &#39;#f7f1e3&#39;, &#39;#34ace0&#39;, &#39;#33d9b2&#39;, &#39;#2c2c54&#39;, &#39;#474787&#39;, &#39;#aaa69d&#39;, &#39;#227093&#39;, &#39;#218c74&#39;, &#39;#ff5252&#39;, &#39;#ff793f&#39;, &#39;#d1ccc0&#39;, &#39;#ffb142&#39;, &#39;#ffda79&#39;, &#39;#b33939&#39;, &#39;#cd6133&#39;, &#39;#84817a&#39;, &#39;#cc8e35&#39;, &#39;#ccae62&#39;, &#39;#E64B35&#39;, &#39;#4DBBD5&#39;, &#39;#00A087&#39;, &#39;#3C5488&#39;, &#39;#F39B7F&#39;, &#39;#8491B4&#39;, &#39;#91D1C2&#39;, &#39;#DC0000&#39;, &#39;#7E6148&#39;, &#39;#B09C85&#39; ) 可能还需要重新输入具体的样本名称或者分组。">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/10x_rename/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.a558ac8f16837d1ca9780489fb47c199b58071c5c356b9c84d8acae50728cd7b.css" integrity="sha256-pVisjxaDfRypeASJ&#43;0fBmbWAccXDVrnITYrK5QcozXs=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/10x_rename/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="My New Hugo Site (Alt + H)">My New Hugo Site</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title entry-hint-parent">
+      10X_rename
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="35" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+    </h1>
+    <div class="post-meta"><span title='2024-10-16 16:59:02 +0800 CST'>October 16, 2024</span>
+
+</div>
+  </header> 
+  <div class="post-content"><p>本篇主要介绍针对挑选合适的分辨率(resolution)进行聚类以及不同的cluster提取特征基因后，如何对基因进行重新命名。</p>
+<p>在完成了sccancer的所有分析后，在combine(如果没有合并那么就是在ScAnno文件夹中)的目录中生产一个RDS文件，sccancer的聚类的resolution默认是0.8。</p>
+<h1 id="一clustree-选定聚类分辨率">一、clustree 选定聚类分辨率<a hidden class="anchor" aria-hidden="true" href="#一clustree-选定聚类分辨率">#</a></h1>
+<p>这个工具可以根据不同resolution的设置的聚类结果绘制聚类树</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Seurat)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(clustree)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">readRDS</span>(<span style="color:#e6db74">&#34;/path/to/your/expr.RDS&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">FindClusters</span>(
+</span></span><span style="display:flex;"><span>  object <span style="color:#f92672">=</span> data,
+</span></span><span style="display:flex;"><span>  resolution <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#a6e22e">seq</span>(<span style="color:#ae81ff">0.1</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">0.1</span>))
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">clustree</span>(data<span style="color:#f92672">@</span>meta.data, prefix <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;RNA_snn_res.&#34;</span>)
+</span></span></code></pre></div><p><img loading="lazy" src="clustree.png" alt="clustree"  />
+</p>
+<p>可以在图中看到不同的resolution，分群的变化情况。以此来确定适合的resolution。resolution&gt;0.7后cluster变化意义就不是很大。分多少群其实现在也不是就根据resolution就定死了，</p>
+<blockquote>
+<p>提取每个cluster的特征基因判断细胞类群才是最终的结果</p>
+</blockquote>
+<p><!-- raw HTML omitted --><em><strong>cluster聚类只是为了更好的分细胞类型。</strong></em><!-- raw HTML omitted --></p>
+<h1 id="二重新聚类并提取cluster特征基因">二、重新聚类，并提取cluster特征基因<a hidden class="anchor" aria-hidden="true" href="#二重新聚类并提取cluster特征基因">#</a></h1>
+<p>我们定好了resolution(比如说0.8)，先载入R包读取数据文件,然配置一个颜色集，也可以直接使用ggsci中的颜色集。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Seurat)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(ggplot2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(dplyr)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(patchwork)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(SingleR)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(showtext)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(reshape2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(openxlsx)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(loupeR)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">readRDS</span>(<span style="color:#e6db74">&#34;/path/to/your/expr.RDS&#34;</span>)
+</span></span><span style="display:flex;"><span>res <span style="color:#f92672">&lt;-</span> <span style="color:#ae81ff">0.8</span>
+</span></span><span style="display:flex;"><span>colors_dutch <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#FFC312&#39;</span>, <span style="color:#e6db74">&#39;#C4E538&#39;</span>, <span style="color:#e6db74">&#39;#12CBC4&#39;</span>, <span style="color:#e6db74">&#39;#FDA7DF&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#ED4C67&#39;</span>, <span style="color:#e6db74">&#39;#F79F1F&#39;</span>, <span style="color:#e6db74">&#39;#A3CB38&#39;</span>, <span style="color:#e6db74">&#39;#1289A7&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#D980FA&#39;</span>, <span style="color:#e6db74">&#39;#B53471&#39;</span>, <span style="color:#e6db74">&#39;#EE5A24&#39;</span>, <span style="color:#e6db74">&#39;#009432&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#0652DD&#39;</span>, <span style="color:#e6db74">&#39;#9980FA&#39;</span>, <span style="color:#e6db74">&#39;#833471&#39;</span>, <span style="color:#e6db74">&#39;#EA2027&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#006266&#39;</span>, <span style="color:#e6db74">&#39;#1B1464&#39;</span>, <span style="color:#e6db74">&#39;#5758BB&#39;</span>, <span style="color:#e6db74">&#39;#6F1E51&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#40407a&#39;</span>, <span style="color:#e6db74">&#39;#706fd3&#39;</span>, <span style="color:#e6db74">&#39;#f7f1e3&#39;</span>, <span style="color:#e6db74">&#39;#34ace0&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#33d9b2&#39;</span>, <span style="color:#e6db74">&#39;#2c2c54&#39;</span>, <span style="color:#e6db74">&#39;#474787&#39;</span>, <span style="color:#e6db74">&#39;#aaa69d&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#227093&#39;</span>, <span style="color:#e6db74">&#39;#218c74&#39;</span>, <span style="color:#e6db74">&#39;#ff5252&#39;</span>, <span style="color:#e6db74">&#39;#ff793f&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#d1ccc0&#39;</span>, <span style="color:#e6db74">&#39;#ffb142&#39;</span>, <span style="color:#e6db74">&#39;#ffda79&#39;</span>, <span style="color:#e6db74">&#39;#b33939&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#cd6133&#39;</span>, <span style="color:#e6db74">&#39;#84817a&#39;</span>, <span style="color:#e6db74">&#39;#cc8e35&#39;</span>, <span style="color:#e6db74">&#39;#ccae62&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#E64B35&#39;</span>, <span style="color:#e6db74">&#39;#4DBBD5&#39;</span>, <span style="color:#e6db74">&#39;#00A087&#39;</span>, <span style="color:#e6db74">&#39;#3C5488&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#F39B7F&#39;</span>, <span style="color:#e6db74">&#39;#8491B4&#39;</span>, <span style="color:#e6db74">&#39;#91D1C2&#39;</span>, <span style="color:#e6db74">&#39;#DC0000&#39;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#39;#7E6148&#39;</span>, <span style="color:#e6db74">&#39;#B09C85&#39;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>可能还需要重新输入具体的样本名称或者分组。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>group_id <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;sample1&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group1&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;sample2&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group1&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;sample3&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group1&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;sample4&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group2&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;sample5&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group2&#34;</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#e6db74">&#34;sample6&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group2&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">Idents</span>(data) <span style="color:#f92672">&lt;-</span> data<span style="color:#f92672">$</span>sample.ident
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RenameIdents</span>(data, group_id)
+</span></span><span style="display:flex;"><span>data<span style="color:#f92672">$</span>groupName <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">Idents</span>(data)
+</span></span></code></pre></div><p>重新降维聚类，并提取每个cluster的特征基因。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>scale.genes <span style="color:#f92672">&lt;-</span>  <span style="color:#a6e22e">rownames</span>(data)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RunPCA</span>(data, features <span style="color:#f92672">=</span> <span style="color:#a6e22e">VariableFeatures</span>(data))
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">ElbowPlot</span>(data, ndims <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>, reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;pca&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(<span style="color:#e6db74">&#34;pca_elbow.pdf&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(<span style="color:#e6db74">&#34;pca_elbow.png&#34;</span>)
+</span></span><span style="display:flex;"><span>pc.num <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">:</span><span style="color:#ae81ff">30</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">##细胞聚类</span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">FindNeighbors</span>(data, dims <span style="color:#f92672">=</span> pc.num)
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">FindClusters</span>(data, resolution <span style="color:#f92672">=</span> res)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">table</span>(data<span style="color:#f92672">@</span>meta.data<span style="color:#f92672">$</span>seurat_clusters)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">##非线性降维</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#tSNE</span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RunTSNE</span>(data, dims <span style="color:#f92672">=</span> pc.num)
+</span></span><span style="display:flex;"><span>embed_tsne <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">Embeddings</span>(data, <span style="color:#e6db74">&#39;tsne&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write.csv</span>(embed_tsne, <span style="color:#e6db74">&#39;embed_tsne.csv&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#UMAP</span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RunUMAP</span>(data, dims <span style="color:#f92672">=</span> pc.num)
+</span></span><span style="display:flex;"><span>embed_umap <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">Embeddings</span>(data, <span style="color:#e6db74">&#39;umap&#39;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write.csv</span>(embed_umap, <span style="color:#e6db74">&#39;embed_umap.csv&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">##特征基因</span>
+</span></span><span style="display:flex;"><span>diff.wilcox <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">FindAllMarkers</span>(data, only.pos <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">write.csv</span>(diff.wilcox, <span style="color:#e6db74">&#34;all_marker.csv&#34;</span>, row.names <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>, quote <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>)
+</span></span></code></pre></div><p>绘制umap，tsne图，这里根据需求分别绘制总的图(umap,tsne)，和按照group分的图(umap,tsne)。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#75715e">## plot</span>
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DimPlot</span>(data,
+</span></span><span style="display:flex;"><span>          split.by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;groupName&#34;</span>,
+</span></span><span style="display:flex;"><span>          label <span style="color:#f92672">=</span> T,
+</span></span><span style="display:flex;"><span>          pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">1.5</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> p,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_group.pdf&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>(<span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> p,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_group.png&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>,
+</span></span><span style="display:flex;"><span>  type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cairo-png&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DimPlot</span>(data, label <span style="color:#f92672">=</span> T, pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> p,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_all.pdf&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>(<span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> p,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;umap_all.png&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>,
+</span></span><span style="display:flex;"><span>  type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cairo-png&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DimPlot</span>(data,
+</span></span><span style="display:flex;"><span>          reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne&#34;</span>,
+</span></span><span style="display:flex;"><span>          label <span style="color:#f92672">=</span> T,
+</span></span><span style="display:flex;"><span>          pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> p,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tSNE_all.pdf&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>(<span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> p,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tSNE_all.png&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">9</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>,
+</span></span><span style="display:flex;"><span>  type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cairo-png&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>q <span style="color:#f92672">&lt;-</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">DimPlot</span>(
+</span></span><span style="display:flex;"><span>    data,
+</span></span><span style="display:flex;"><span>    reduction <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tsne&#34;</span>,
+</span></span><span style="display:flex;"><span>    split.by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;groupName&#34;</span>,
+</span></span><span style="display:flex;"><span>    label <span style="color:#f92672">=</span> T,
+</span></span><span style="display:flex;"><span>    pt.size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  ) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_manual</span>(values <span style="color:#f92672">=</span> colors_dutch) <span style="color:#f92672">+</span> <span style="color:#a6e22e">theme</span>(panel.spacing <span style="color:#f92672">=</span> <span style="color:#a6e22e">unit</span>(<span style="color:#ae81ff">0.6</span>, <span style="color:#e6db74">&#34;cm&#34;</span>, data <span style="color:#f92672">=</span> <span style="color:#66d9ef">NULL</span>))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>()
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> q,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tSNE_group.pdf&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>
+</span></span><span style="display:flex;"><span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">showtext_auto</span>(<span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">ggsave</span>(
+</span></span><span style="display:flex;"><span>  plot <span style="color:#f92672">=</span> q,
+</span></span><span style="display:flex;"><span>  filename <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tSNE_group.png&#34;</span>,
+</span></span><span style="display:flex;"><span>  width <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>,
+</span></span><span style="display:flex;"><span>  height <span style="color:#f92672">=</span> <span style="color:#ae81ff">7</span>,
+</span></span><span style="display:flex;"><span>  type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cairo-png&#34;</span>
+</span></span><span style="display:flex;"><span>)
+</span></span></code></pre></div><p>保存RDS，并使用loupeR生成loupe文件</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">saveRDS</span>(subset_t,<span style="color:#a6e22e">paste0</span>(<span style="color:#e6db74">&#34;res-&#34;</span>,res,<span style="color:#e6db74">&#34;.RDS&#34;</span>))
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">create_loupe_from_seurat</span>(subset_t,executable_path <span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/path/to/louper-linux-x64&#34;</span> )
+</span></span></code></pre></div><p>以上就完成了初步的聚类，实际在使用sccancer进行分析时已经按照0.8进行cluster。这里其实不需要重新聚类。res=0.8其实还挺科学的，适用于大部分的场景。loupeR的使用以及输出文件，可以参考<a href="https://github.com/10XGenomics/loupeR">loupeR</a>。</p>
+<h1 id="三细胞类型判定">三、细胞类型判定<a hidden class="anchor" aria-hidden="true" href="#三细胞类型判定">#</a></h1>
+<p>细胞类型判定可以使用singleR包进行，也可以根据生物学知识进行判定。比如我们在上一步聚类是总共有0~14,15个cluster，但是根据生物学知识，我们知道cluster10是血小板细胞，cluster6是红细胞。理论情况下不应该出现这些细胞类型。那么我们可能就需要现将这些细胞去除掉。</p>
+<h2 id="31-去除不应该出现的细胞类">3.1 去除不应该出现的细胞类<a hidden class="anchor" aria-hidden="true" href="#31-去除不应该出现的细胞类">#</a></h2>
+<p>还是使用Seurat就可以</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(Seurat)
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">readRDS</span>(<span style="color:#e6db74">&#34;/path/to/your/res-0.8.RDS&#34;</span>)
+</span></span><span style="display:flex;"><span>scdata <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">subset</span>(data, idents<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;10&#34;</span>,<span style="color:#e6db74">&#34;6&#34;</span>),invert <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span></code></pre></div><h2 id="32-单细胞类型判定合并">3.2 单细胞类型判定合并<a hidden class="anchor" aria-hidden="true" href="#32-单细胞类型判定合并">#</a></h2>
+<p>剩余的cluster被判定为了6个细胞类型(I,II,III,IV,V,VI)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>new.cluster.ids <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;0&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;I&#34;</span>,<span style="color:#e6db74">&#34;11&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;I&#34;</span>,<span style="color:#e6db74">&#34;1&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;II&#34;</span>,<span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;II&#34;</span>,<span style="color:#e6db74">&#34;2&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;III&#34;</span>,<span style="color:#e6db74">&#34;9&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;III&#34;</span>,<span style="color:#e6db74">&#34;3&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;IV&#34;</span>,<span style="color:#e6db74">&#34;5&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;IV&#34;</span>,<span style="color:#e6db74">&#34;7&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;V&#34;</span>,<span style="color:#e6db74">&#34;8&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;V&#34;</span>,<span style="color:#e6db74">&#34;14&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;V&#34;</span>,<span style="color:#e6db74">&#34;12&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;VI&#34;</span>,<span style="color:#e6db74">&#34;13&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;VI&#34;</span>)
+</span></span><span style="display:flex;"><span>scdata <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">RenameIdents</span>(scdata, new.cluster.ids)
+</span></span><span style="display:flex;"><span>scdata<span style="color:#f92672">$</span>celltype <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">Idents</span>(scdata)
+</span></span><span style="display:flex;"><span><span style="color:#75715e">## 统计每个细胞类型的细胞数量和百分比</span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(reshape2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(openxlsx)
+</span></span><span style="display:flex;"><span>cell_count <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">table</span>(<span style="color:#a6e22e">Idents</span>(scdata),scdata<span style="color:#f92672">$</span>sample.ident)
+</span></span><span style="display:flex;"><span>df <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">dcast</span>(<span style="color:#a6e22e">as.data.frame</span>(cell_count), Var1 <span style="color:#f92672">~</span> Var2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">colnames</span>(df)[1] <span style="color:#f92672">&lt;-</span> <span style="color:#e6db74">&#34;celltype&#34;</span>
+</span></span><span style="display:flex;"><span>df_transformed <span style="color:#f92672">&lt;-</span> df
+</span></span><span style="display:flex;"><span>df_transformed[, <span style="color:#ae81ff">-1</span>] <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">lapply</span>(df[, <span style="color:#ae81ff">-1</span>], <span style="color:#66d9ef">function</span>(x) x <span style="color:#f92672">/</span> <span style="color:#a6e22e">sum</span>(x))
+</span></span><span style="display:flex;"><span>wb <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">createWorkbook</span>()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">addWorksheet</span>(wb, <span style="color:#e6db74">&#34;count&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">writeData</span>(wb, <span style="color:#e6db74">&#34;count&#34;</span>, cell_count, colNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>, rowNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">addWorksheet</span>(wb, <span style="color:#e6db74">&#34;pct&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">writeData</span>(wb, <span style="color:#e6db74">&#34;pct&#34;</span>, df_transformed, colNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>, rowNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">FALSE</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">saveWorkbook</span>(wb, <span style="color:#e6db74">&#34;cell_count.xlsx&#34;</span>, overwrite <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">saveRDS</span>(scdata,<span style="color:#e6db74">&#34;rename.RDS&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">create_loupe_from_seurat</span>(subset_t,output_name<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;rename&#34;</span>,executable_path <span style="color:#f92672">=</span><span style="color:#e6db74">&#34;/path/to/louper-linux-x64&#34;</span> )
+</span></span></code></pre></div><h2 id="33-基于细胞数量统计绘制箱线图">3.3 基于细胞数量统计绘制箱线图<a hidden class="anchor" aria-hidden="true" href="#33-基于细胞数量统计绘制箱线图">#</a></h2>
+<p>细胞数量也是一个很重要的指标。</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(openxlsx)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(reshape2)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">library</span>(dplyr)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">read.xlsx</span>(<span style="color:#e6db74">&#34;cell_count.xlsx&#34;</span>,sheet <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;pct&#34;</span>,rowNames <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>)
+</span></span><span style="display:flex;"><span>grp <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">data.frame</span>(sample <span style="color:#f92672">=</span> <span style="color:#a6e22e">colnames</span>(data),group<span style="color:#f92672">=</span><span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;Group1&#34;</span>,<span style="color:#e6db74">&#34;Group1&#34;</span>,<span style="color:#e6db74">&#34;Group1&#34;</span>,<span style="color:#e6db74">&#34;Group2&#34;</span>,<span style="color:#e6db74">&#34;Group2&#34;</span>,<span style="color:#e6db74">&#34;Group2&#34;</span>)) <span style="color:#75715e">## 对应分组</span>
+</span></span><span style="display:flex;"><span>data<span style="color:#f92672">$</span>celltype <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">rownames</span>(data)
+</span></span><span style="display:flex;"><span>data_l <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">melt</span>(data,id.vars<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;celltype&#34;</span>)
+</span></span><span style="display:flex;"><span><span style="color:#a6e22e">colnames</span>(data_l) <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;celltype&#34;</span>,<span style="color:#e6db74">&#34;sample&#34;</span>,<span style="color:#e6db74">&#34;pct&#34;</span>)
+</span></span><span style="display:flex;"><span>draw_data <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">left_join</span>(data_l,grp,by <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;sample&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>combinations <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">combn</span>(<span style="color:#a6e22e">levels</span>(<span style="color:#a6e22e">as.factor</span>(draw_data<span style="color:#f92672">$</span>group)),<span style="color:#ae81ff">2</span>,simplify <span style="color:#f92672">=</span> F)
+</span></span><span style="display:flex;"><span>combination_list <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">lapply</span>(combinations, <span style="color:#66d9ef">function</span>(pair) {
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">c</span>(pair[1], pair[2])
+</span></span><span style="display:flex;"><span>})
+</span></span><span style="display:flex;"><span>cells <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">rownames</span>(data)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">for</span> (i <span style="color:#66d9ef">in</span> cells) {
+</span></span><span style="display:flex;"><span>  df <span style="color:#f92672">&lt;-</span> draw_data<span style="color:#a6e22e">[which</span>(draw_data<span style="color:#f92672">$</span>celltype<span style="color:#f92672">==</span> i),]
+</span></span><span style="display:flex;"><span>  df<span style="color:#f92672">$</span>pct <span style="color:#f92672">&lt;-</span> df<span style="color:#f92672">$</span>pct <span style="color:#f92672">*</span> <span style="color:#ae81ff">100</span>
+</span></span><span style="display:flex;"><span>  p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">ggplot</span>(df, <span style="color:#a6e22e">aes</span>(x <span style="color:#f92672">=</span> group,y <span style="color:#f92672">=</span> pct, color <span style="color:#f92672">=</span> group)) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">geom_boxplot</span>(outlier.shape <span style="color:#f92672">=</span> <span style="color:#66d9ef">NA</span>,lwd <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">geom_point</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">stat_boxplot</span>(geom <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;errorbar&#34;</span>,size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">labs</span>(x <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>, y <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Cell_percet/%&#34;</span>,
+</span></span><span style="display:flex;"><span>         title <span style="color:#f92672">=</span> i) <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">theme_bw</span>() <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">theme</span>(legend.position <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;none&#34;</span>, 
+</span></span><span style="display:flex;"><span>          plot.title <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>,hjust <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>          axis.text <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>),
+</span></span><span style="display:flex;"><span>          axis.title.y <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">14</span>),
+</span></span><span style="display:flex;"><span>          panel.grid <span style="color:#f92672">=</span><span style="color:#a6e22e">element_blank</span>(),panel.border<span style="color:#f92672">=</span><span style="color:#a6e22e">element_rect</span>(linewidth <span style="color:#f92672">=</span><span style="color:#ae81ff">1.5</span>)) <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">stat_compare_means</span>(comparisons <span style="color:#f92672">=</span> combination_list, method <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;t.test&#34;</span>,label <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;p.signif&#34;</span>) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">scale_color_aaas</span>() <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_fill_aaas</span>(alpha <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.6</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">## 可能还有特殊符号</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># if (i == &#34;γδT/ILC&#34;) {</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">#   i &lt;- &#34;ILC&#34;</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e"># }</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ggsave</span>(p,filename<span style="color:#f92672">=</span><span style="color:#a6e22e">paste0</span>(<span style="color:#e6db74">&#34;boxplot/&#34;</span>, i, <span style="color:#e6db74">&#34;.png&#34;</span>),width <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>, type <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;cairo-png&#34;</span>)
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">ggsave</span>(p,filename<span style="color:#f92672">=</span><span style="color:#a6e22e">paste0</span>(<span style="color:#e6db74">&#34;boxplot/&#34;</span>, i, <span style="color:#e6db74">&#34;.pdf&#34;</span>),width <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>, height <span style="color:#f92672">=</span> <span style="color:#ae81ff">8</span>)
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">## 其他的一些展现形式</span>
+</span></span><span style="display:flex;"><span>q <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">ggboxplot</span>(
+</span></span><span style="display:flex;"><span>    df,
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group&#34;</span>,
+</span></span><span style="display:flex;"><span>    y <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;pct&#34;</span>,
+</span></span><span style="display:flex;"><span>    color <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;group&#34;</span>,
+</span></span><span style="display:flex;"><span>    add <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;jitter&#34;</span>,
+</span></span><span style="display:flex;"><span>    legend <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;none&#39;</span>,lwd<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>,linewidth <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+</span></span><span style="display:flex;"><span>  ) <span style="color:#f92672">+</span> <span style="color:#a6e22e">stat_compare_means</span>(comparisons <span style="color:#f92672">=</span> combination_list, method <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;t.test&#34;</span>,label <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;p.signif&#34;</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_color_aaas</span>() <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_fill_aaas</span>(alpha <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.6</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>p <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">ggplot</span>(df, <span style="color:#a6e22e">aes</span>(x <span style="color:#f92672">=</span> group,y <span style="color:#f92672">=</span> pct, color <span style="color:#f92672">=</span> group)) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">geom_boxplot</span>(outlier.shape <span style="color:#f92672">=</span> <span style="color:#66d9ef">NA</span>,lwd <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">geom_point</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">6</span>) <span style="color:#f92672">+</span> <span style="color:#a6e22e">stat_boxplot</span>(geom <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;errorbar&#34;</span>,size <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">labs</span>(x <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>, y <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Cell_percet/%&#34;</span>,
+</span></span><span style="display:flex;"><span>        title <span style="color:#f92672">=</span> i) <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">theme_bw</span>() <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">theme</span>(legend.position <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;none&#34;</span>, 
+</span></span><span style="display:flex;"><span>        plot.title <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">20</span>,hjust <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.5</span>),
+</span></span><span style="display:flex;"><span>        axis.text <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">12</span>),
+</span></span><span style="display:flex;"><span>        axis.title.y <span style="color:#f92672">=</span> <span style="color:#a6e22e">element_text</span>(size <span style="color:#f92672">=</span> <span style="color:#ae81ff">14</span>),
+</span></span><span style="display:flex;"><span>        panel.grid <span style="color:#f92672">=</span><span style="color:#a6e22e">element_blank</span>(),panel.border<span style="color:#f92672">=</span><span style="color:#a6e22e">element_rect</span>(linewidth <span style="color:#f92672">=</span><span style="color:#ae81ff">1.5</span>)) <span style="color:#f92672">+</span> 
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">stat_compare_means</span>(comparisons <span style="color:#f92672">=</span> combination_list, method <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;t.test&#34;</span>,label <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;p.signif&#34;</span>) <span style="color:#f92672">+</span>
+</span></span><span style="display:flex;"><span>  <span style="color:#a6e22e">scale_color_aaas</span>() <span style="color:#f92672">+</span> <span style="color:#a6e22e">scale_fill_aaas</span>(alpha <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.6</span>)
+</span></span></code></pre></div><p>关于细胞类型的判定重命名就到这里就结束了。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2024 <a href="http://localhost:1313/">My New Hugo Site</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

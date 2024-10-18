@@ -107,6 +107,31 @@
 
 <article class="first-entry"> 
   <header class="entry-header">
+    <h2 class="entry-hint-parent">10X_rename
+      <span class="entry-hint" title="Draft">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" fill="currentColor">
+          <path
+            d="M160-410v-60h300v60H160Zm0-165v-60h470v60H160Zm0-165v-60h470v60H160Zm360 580v-123l221-220q9-9 20-13t22-4q12 0 23 4.5t20 13.5l37 37q9 9 13 20t4 22q0 11-4.5 22.5T862.09-380L643-160H520Zm300-263-37-37 37 37ZM580-220h38l121-122-18-19-19-18-122 121v38Zm141-141-19-18 37 37-18-19Z" />
+        </svg>
+      </span>
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>本篇主要介绍针对挑选合适的分辨率(resolution)进行聚类以及不同的cluster提取特征基因后，如何对基因进行重新命名。
+在完成了sccancer的所有分析后，在combine(如果没有合并那么就是在ScAnno文件夹中)的目录中生产一个RDS文件，sccancer的聚类的resolution默认是0.8。
+一、clustree 选定聚类分辨率 这个工具可以根据不同resolution的设置的聚类结果绘制聚类树
+library(Seurat) library(clustree) data &lt;- readRDS(&#34;/path/to/your/expr.RDS&#34;) data &lt;- FindClusters( object = data, resolution = c(seq(0.1,1,0.1)) ) clustree(data@meta.data, prefix = &#34;RNA_snn_res.&#34;) 可以在图中看到不同的resolution，分群的变化情况。以此来确定适合的resolution。resolution&gt;0.7后cluster变化意义就不是很大。分多少群其实现在也不是就根据resolution就定死了，
+提取每个cluster的特征基因判断细胞类群才是最终的结果
+cluster聚类只是为了更好的分细胞类型。
+二、重新聚类，并提取cluster特征基因 我们定好了resolution(比如说0.8)，先载入R包读取数据文件,然配置一个颜色集，也可以直接使用ggsci中的颜色集。
+library(Seurat) library(ggplot2) library(dplyr) library(patchwork) library(SingleR) library(showtext) library(reshape2) library(openxlsx) library(loupeR) data &lt;- readRDS(&#34;/path/to/your/expr.RDS&#34;) res &lt;- 0.8 colors_dutch &lt;- c( &#39;#FFC312&#39;, &#39;#C4E538&#39;, &#39;#12CBC4&#39;, &#39;#FDA7DF&#39;, &#39;#ED4C67&#39;, &#39;#F79F1F&#39;, &#39;#A3CB38&#39;, &#39;#1289A7&#39;, &#39;#D980FA&#39;, &#39;#B53471&#39;, &#39;#EE5A24&#39;, &#39;#009432&#39;, &#39;#0652DD&#39;, &#39;#9980FA&#39;, &#39;#833471&#39;, &#39;#EA2027&#39;, &#39;#006266&#39;, &#39;#1B1464&#39;, &#39;#5758BB&#39;, &#39;#6F1E51&#39;, &#39;#40407a&#39;, &#39;#706fd3&#39;, &#39;#f7f1e3&#39;, &#39;#34ace0&#39;, &#39;#33d9b2&#39;, &#39;#2c2c54&#39;, &#39;#474787&#39;, &#39;#aaa69d&#39;, &#39;#227093&#39;, &#39;#218c74&#39;, &#39;#ff5252&#39;, &#39;#ff793f&#39;, &#39;#d1ccc0&#39;, &#39;#ffb142&#39;, &#39;#ffda79&#39;, &#39;#b33939&#39;, &#39;#cd6133&#39;, &#39;#84817a&#39;, &#39;#cc8e35&#39;, &#39;#ccae62&#39;, &#39;#E64B35&#39;, &#39;#4DBBD5&#39;, &#39;#00A087&#39;, &#39;#3C5488&#39;, &#39;#F39B7F&#39;, &#39;#8491B4&#39;, &#39;#91D1C2&#39;, &#39;#DC0000&#39;, &#39;#7E6148&#39;, &#39;#B09C85&#39; ) 可能还需要重新输入具体的样本名称或者分组。...</p>
+  </div>
+  <footer class="entry-footer"><span title='2024-10-16 16:59:02 +0800 CST'>October 16, 2024</span></footer>
+  <a class="entry-link" aria-label="post link to 10X_rename" href="https://gganakin.github.io/posts/10x_rename/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
     <h2 class="entry-hint-parent">10X_scCancer
       <span class="entry-hint" title="Draft">
         <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" fill="currentColor">
@@ -117,7 +142,10 @@
     </h2>
   </header>
   <div class="entry-content">
-    <p>本篇主要记录基于10X cellranger之后的数据进行简单的初步处理。以及简单的报告，该部分内容基于 scCancer2</p>
+    <p>本篇主要记录基于10X cellranger之后的数据进行简单的初步处理。以及简单的报告，该部分内容基于 scCancer2
+如何安装scCancer2 如何使用scCancer2进行分析 工具介绍 以下来自于 scCancer2的github介绍
+We updated our R toolkit, scCancer, based on massive single-cell transcriptome and spatial transcriptome data.
+Cell subtype annotation and cross-dataset label similarity: Our analysis mainly focused on cell subtype annotation by training multiple lightweight machine-learning models on scRNA-seq data. We proposed a method for quantitatively evaluating the similarity of cell subtype labels originating from different published datasets. We fully preserved the original labeling in cell atlases and analyzed the relationship between cell subtypes across datasets....</p>
   </div>
   <footer class="entry-footer"><span title='2024-10-16 11:37:57 +0800 CST'>October 16, 2024</span></footer>
   <a class="entry-link" aria-label="post link to 10X_scCancer" href="https://gganakin.github.io/posts/10x_sccancer/"></a>
@@ -136,7 +164,15 @@
   </header>
   <div class="entry-content">
     <p>本篇用于记录接触的10X_mRNA数据，以及相关分析结果。
-cellranger count 模块的使用 cellranger 结果文件的解释 数据下机及质控</p>
+cellranger count 模块的使用 cellranger 结果文件的解释 数据下机及质控 10X 数据下机后还是简单的双端fastq文件，只需要使用cellranger就可以进行质控等的分析。
+/path/to/cellranger count --id=run_count_samplename \ --fastqs=/path/to/sample_fq_dir \ --sample=samplename \ --transcriptome=/path/to/transcriptome/dir \ --localcores=12 cellranger及相关使用数据库的的下载链接为 cellranger download 历史版本的下家链接为previous versions
+结果解释 web_summary.html 文件为总览结果 以下结果来自于知乎分享
+该网页的结果分成了summary和analysis两部分，
+1. summary 1. 异常结果警告 如果数据中存在异常，在网页的头部会给黄色的警告框，如下所示
+点击Details, 可以看到详细的信息，上图显示RNA reads的Q30比例太低，理想情况是大于65%， 而实际的数据只有64.4%。
+2.细胞和基因数目的评估 对样本中的细胞和表达的基因个数评估，同时还给出了barcode, index, umi, RNA reads不同序列的Q30， 示意如下 其中：
+Items Description Estimated number of cells 样本测到的细胞数 Mean reads per cell 每个细胞测到的平均reads Mean reads per cell 每个细胞基因数的中位数 Sequencing中：
+Items Description Number of reads 测到的总read数目 Valid barcodes UMI校正后匹配的UMI数量 关于Sequencing saturation：测序饱和度，一般60-80%比较合适（阈值范围可以适当调整，但是高于70%/80%左右绝对OK）...</p>
   </div>
   <footer class="entry-footer"><span title='2024-10-16 10:25:54 +0800 CST'>October 16, 2024</span></footer>
   <a class="entry-link" aria-label="post link to 10X_cellranger" href="https://gganakin.github.io/posts/10x_cellranger/"></a>

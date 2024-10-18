@@ -147,8 +147,10 @@ Cell subtype annotation and cross-dataset label similarity: Our analysis mainly 
 <p><img loading="lazy" src="Overview.png" alt="image"  />
 </p>
 <h1 id="工具安装">工具安装<a hidden class="anchor" aria-hidden="true" href="#工具安装">#</a></h1>
-<p>目前该工具依赖于 Seurat-4.3.0。其余的按照github页面的安装指引即可。(还是挺折腾的，建议单独开一个虚拟环境安装QAQ)</p>
-<p>值得注意的是在该工具存在一个bug(在 R 4.3.2 中)。引起错误的原因出现在 <a href="https://github.com/czythu/scCancer/blob/master/R/scStatistics.R">scStatistics.R</a>的第257行。</p>
+<p>目前该工具依赖于 Seurat-4.3.0。其余的按照github页面的安装指引即可。(还是挺折腾的，建议单独开一个虚拟环境安装QAQ)
+harmony的版本不能低了</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>micromamba install conda-forge::r-harmony
+</span></span></code></pre></div><p>值得注意的是在该工具存在一个bug(在 R 4.3.2 中)。引起错误的原因出现在 <a href="https://github.com/czythu/scCancer/blob/master/R/scStatistics.R">scStatistics.R</a>的第257行。</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>tmp.df <span style="color:#f92672">&lt;-</span> cell.manifest<span style="color:#a6e22e">[order</span>(cell.manifest[<span style="color:#e6db74">&#34;nUMI&#34;</span>], decreasing <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>),]
 </span></span></code></pre></div><p>应该修改为</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>tmp.df <span style="color:#f92672">&lt;-</span> cell.manifest<span style="color:#a6e22e">[order</span>(cell.manifest[,<span style="color:#e6db74">&#34;nUMI&#34;</span>], decreasing <span style="color:#f92672">=</span> <span style="color:#66d9ef">TRUE</span>),]
@@ -248,7 +250,6 @@ Cell subtype annotation and cross-dataset label similarity: Our analysis mainly 
 <p>一般也就用这里的expr.RDS文件。以及查看html报告</p>
 <h2 id="2-多样本分析">2. 多样本分析<a hidden class="anchor" aria-hidden="true" href="#2-多样本分析">#</a></h2>
 <h3 id="sccombination">ScCombination<a hidden class="anchor" aria-hidden="true" href="#sccombination">#</a></h3>
-<p>源代码好像又有不适用的地方需要重新改，找个时间再试。TAT</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-R" data-lang="R"><span style="display:flex;"><span>single.savePaths <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;/path/to/results/Sample1/ScAnno&#34;</span>,
 </span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;/path/to/results/Sample2/ScAnno&#34;</span>,
 </span></span><span style="display:flex;"><span>                     <span style="color:#e6db74">&#34;/path/to/results/Sample3/ScAnno&#34;</span>,
@@ -271,7 +272,27 @@ Cell subtype annotation and cross-dataset label similarity: Our analysis mainly 
 </span></span><span style="display:flex;"><span>    comb.method <span style="color:#f92672">=</span> comb.method
 </span></span><span style="display:flex;"><span>)
 </span></span></code></pre></div><p>会在 <em>savePath</em> 也就是 <em>/path/to/results/Combination</em> 下生成这些文件。</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>├── cellAnnotation.txt
+</span></span><span style="display:flex;"><span>├── DE-Genes.RDS
+</span></span><span style="display:flex;"><span>├── diff.expr.genes
+</span></span><span style="display:flex;"><span>├── expr.programs
+</span></span><span style="display:flex;"><span>├── expr.RDS
+</span></span><span style="display:flex;"><span>├── figures
+</span></span><span style="display:flex;"><span>├── report-figures
+</span></span><span style="display:flex;"><span>├── report-scAnnoComb.html
+</span></span><span style="display:flex;"><span>└── report-scAnnoComb.md
+</span></span></code></pre></div><ul>
+<li>report-scAnnoComb.html : A HTML report containing all results.</li>
+<li>report-scAnnoComb.md : A markdown report.</li>
+<li>figures/ : All figures generated during this step.</li>
+<li>report-figures/ : All figures presented in the HTML report.</li>
+<li>expr.RDS : A Seurat object.</li>
+<li>diff.expr.genes/ : Differentially expressed genes information for all clusters.</li>
+<li>cellAnnotation.txt : The annotation results for each cells.</li>
+<li>expr.programs/ : All results of expression programs identification.</li>
+<li>(anchors.RDS : The anchors used for batch correction of &ldquo;NormalMNN&rdquo; or &ldquo;SeuratMNN&rdquo;.)</li>
+</ul>
+
 
   </div>
 

@@ -6,14 +6,21 @@
     <description>Recent content on My New Hugo Site</description>
     <generator>Hugo -- 0.129.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 16 Oct 2024 11:37:57 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 16 Oct 2024 16:59:02 +0800</lastBuildDate>
     <atom:link href="https://gganakin.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>10X_rename</title>
+      <link>https://gganakin.github.io/posts/10x_rename/</link>
+      <pubDate>Wed, 16 Oct 2024 16:59:02 +0800</pubDate>
+      <guid>https://gganakin.github.io/posts/10x_rename/</guid>
+      <description>本篇主要介绍针对挑选合适的分辨率(resolution)进行聚类以及不同的cluster提取特征基因后，如何对基因进行重新命名。</description>
+    </item>
     <item>
       <title>10X_scCancer</title>
       <link>https://gganakin.github.io/posts/10x_sccancer/</link>
       <pubDate>Wed, 16 Oct 2024 11:37:57 +0800</pubDate>
       <guid>https://gganakin.github.io/posts/10x_sccancer/</guid>
-      <description>本篇主要记录基于10X cellranger之后的数据进行简单的初步处理。以及简单的报告，该部分内容基于 scCancer2。如何安装scCancer2 如何使用scCancer2进行分析 </description>
+      <description>本篇主要记录基于10X cellranger之后的数据进行简单的初步处理。以及简单的报告，该部分内容基于 scCancer2 如何安装scCancer2 如何使用scCancer2进行分析</description>
     </item>
     <item>
       <title>10X_cellranger</title>
