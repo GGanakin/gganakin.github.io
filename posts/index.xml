@@ -2,39 +2,69 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Posts on My New Hugo Site</title>
-    <link>https://gganakin.github.io/posts/</link>
+    <link>http://localhost:1313/posts/</link>
     <description>Recent content in Posts on My New Hugo Site</description>
     <generator>Hugo -- 0.129.0</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 16 Oct 2024 16:59:02 +0800</lastBuildDate>
-    <atom:link href="https://gganakin.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Wed, 27 Nov 2024 13:45:24 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>10X_cellchat</title>
+      <link>http://localhost:1313/posts/10x_cellchat/</link>
+      <pubDate>Wed, 27 Nov 2024 13:45:24 +0800</pubDate>
+      <guid>http://localhost:1313/posts/10x_cellchat/</guid>
+      <description>细胞通讯一搬有以下几个工具可以选择
+CellChatCellChat将细胞的基因表达数据作为输入，并结合配体受体及其辅助因子的相互作用来模拟细胞间通讯。（配体-受体+多聚体+辅因子） CellPhoneDBcellphonedb是公开的人工校正的，储存受体、配体以及两种相互作用的数据库。此外，还考虑了结构组成，能够描述异构复合物。（配体-受体+多聚体） NicheNet通过将相互作用细胞的表达数据与信号和基因调控网络的先验知识相结合来预测相互作用细胞之间的配体-靶标联系的方法。（配体-受体+信号通路） 还有一些其他工具比如iTALK，celltalker，singlecellsiGnalR，scTensor和基于MATLAB的SoptSC，这几个工具都是基于配体受体相互作用，但是还没有来得及尝试。 本篇主要记录一些cellchat的使用 CellChat通过综合信号配体、受体及其辅因子基因的表达只与它们之间互作的先验知识对细胞通讯概率建模。在推断出细胞间通讯网 络后，CellChat提供了进一步数据探索、分析和可视化的功能。
+Jin, S., Guerrero-Juarez, C.F., Zhang, L. et al. Inference and analysis of cell-cell communication using CellChat. N at Commun 12, 1088 (2021). https://doi.org/10.1038/s41467-021-21246-9
+这个包的绘图功能挺不友好的，需要注意检查输出文件，是否存在空白图像，特别是在服务器上运行的时候。且代码中我用来绘图的代码不是很聪明，肯定要很大的改良空间
+1 单样本分析(不分组分析) 需要准备的依然只需要已经进行了细胞类型注释的RDS文件，以及需要清楚使用的物种. 使用的脚本参考了https://segmentfault.com/a/1190000044761294
+library(Seurat) library(CellChat) library(dplyr) library(patchwork) library(ggplot2) library(showtext) ## 读取数据 构建cellchat对象 data &amp;lt;- readRDS(&amp;#34;../cc.RDS&amp;#34;) Idents(data) &amp;lt;- data$celltype data$celltype &amp;lt;- Idents(data) data$samples &amp;lt;- data$samplename cellchat &amp;lt;- createCellChat(object = data, group.by=&amp;#34;celltype&amp;#34;,datatype = &amp;#34;RNA&amp;#34;) 对cellchat对象进行分析
+groupSize &amp;lt;- as.numeric(table(cellchat@idents)) groupSize CellChatDB &amp;lt;- CellChatDB.</description>
+    </item>
+    <item>
+      <title>更新计划</title>
+      <link>http://localhost:1313/posts/10x_%E8%AE%A1%E5%88%92/</link>
+      <pubDate>Fri, 18 Oct 2024 13:50:20 +0800</pubDate>
+      <guid>http://localhost:1313/posts/10x_%E8%AE%A1%E5%88%92/</guid>
+      <description>最近真的好累啊 暂停休息一下，列一下后续需要记录的分析过程好了
+10X_cellchat 10X_cellphonedb 拟时序分析 RNAvelocity diffusionmap monocle2 monocle3 cytotrace 拷贝数检测 infercnv copyKAT </description>
+    </item>
     <item>
       <title>10X_rename</title>
-      <link>https://gganakin.github.io/posts/10x_rename/</link>
+      <link>http://localhost:1313/posts/10x_rename/</link>
       <pubDate>Wed, 16 Oct 2024 16:59:02 +0800</pubDate>
-      <guid>https://gganakin.github.io/posts/10x_rename/</guid>
-      <description>本篇主要介绍针对挑选合适的分辨率(resolution)进行聚类以及不同的cluster提取特征基因后，如何对基因进行重新命名。</description>
+      <guid>http://localhost:1313/posts/10x_rename/</guid>
+      <description>本篇主要介绍针对挑选合适的分辨率(resolution)进行聚类以及不同的cluster提取特征基因后，如何对基因进行重新命名。
+在完成了sccancer的所有分析后，在combine(如果没有合并那么就是在ScAnno文件夹中)的目录中生产一个RDS文件，sccancer的聚类的resolution默认是0.8。
+一、clustree 选定聚类分辨率 这个工具可以根据不同resolution的设置的聚类结果绘制聚类树
+library(Seurat) library(clustree) data &amp;lt;- readRDS(&amp;#34;/path/to/your/expr.RDS&amp;#34;) data &amp;lt;- FindClusters( object = data, resolution = c(seq(0.1,1,0.1)) ) clustree(data@meta.data, prefix = &amp;#34;RNA_snn_res.&amp;#34;) 可以在图中看到不同的resolution，分群的变化情况。以此来确定适合的resolution。resolution&amp;gt;0.7后cluster变化意义就不是很大。分多少群其实现在也不是就根据resolution就定死了，
+提取每个cluster的特征基因判断细胞类群才是最终的结果
+cluster聚类只是为了更好的分细胞类型。
+二、重新聚类，并提取cluster特征基因 我们定好了resolution(比如说0.8)，先载入R包读取数据文件,然配置一个颜色集，也可以直接使用ggsci中的颜色集。
+library(Seurat) library(ggplot2) library(dplyr) library(patchwork) library(SingleR) library(showtext) library(reshape2) library(openxlsx) library(loupeR) data &amp;lt;- readRDS(&amp;#34;/path/to/your/expr.RDS&amp;#34;) res &amp;lt;- 0.8 colors_dutch &amp;lt;- c( &amp;#39;#FFC312&amp;#39;, &amp;#39;#C4E538&amp;#39;, &amp;#39;#12CBC4&amp;#39;, &amp;#39;#FDA7DF&amp;#39;, &amp;#39;#ED4C67&amp;#39;, &amp;#39;#F79F1F&amp;#39;, &amp;#39;#A3CB38&amp;#39;, &amp;#39;#1289A7&amp;#39;, &amp;#39;#D980FA&amp;#39;, &amp;#39;#B53471&amp;#39;, &amp;#39;#EE5A24&amp;#39;, &amp;#39;#009432&amp;#39;, &amp;#39;#0652DD&amp;#39;, &amp;#39;#9980FA&amp;#39;, &amp;#39;#833471&amp;#39;, &amp;#39;#EA2027&amp;#39;, &amp;#39;#006266&amp;#39;, &amp;#39;#1B1464&amp;#39;, &amp;#39;#5758BB&amp;#39;, &amp;#39;#6F1E51&amp;#39;, &amp;#39;#40407a&amp;#39;, &amp;#39;#706fd3&amp;#39;, &amp;#39;#f7f1e3&amp;#39;, &amp;#39;#34ace0&amp;#39;, &amp;#39;#33d9b2&amp;#39;, &amp;#39;#2c2c54&amp;#39;, &amp;#39;#474787&amp;#39;, &amp;#39;#aaa69d&amp;#39;, &amp;#39;#227093&amp;#39;, &amp;#39;#218c74&amp;#39;, &amp;#39;#ff5252&amp;#39;, &amp;#39;#ff793f&amp;#39;, &amp;#39;#d1ccc0&amp;#39;, &amp;#39;#ffb142&amp;#39;, &amp;#39;#ffda79&amp;#39;, &amp;#39;#b33939&amp;#39;, &amp;#39;#cd6133&amp;#39;, &amp;#39;#84817a&amp;#39;, &amp;#39;#cc8e35&amp;#39;, &amp;#39;#ccae62&amp;#39;, &amp;#39;#E64B35&amp;#39;, &amp;#39;#4DBBD5&amp;#39;, &amp;#39;#00A087&amp;#39;, &amp;#39;#3C5488&amp;#39;, &amp;#39;#F39B7F&amp;#39;, &amp;#39;#8491B4&amp;#39;, &amp;#39;#91D1C2&amp;#39;, &amp;#39;#DC0000&amp;#39;, &amp;#39;#7E6148&amp;#39;, &amp;#39;#B09C85&amp;#39; ) 可能还需要重新输入具体的样本名称或者分组。</description>
     </item>
     <item>
       <title>10X_scCancer</title>
-      <link>https://gganakin.github.io/posts/10x_sccancer/</link>
+      <link>http://localhost:1313/posts/10x_sccancer/</link>
       <pubDate>Wed, 16 Oct 2024 11:37:57 +0800</pubDate>
-      <guid>https://gganakin.github.io/posts/10x_sccancer/</guid>
+      <guid>http://localhost:1313/posts/10x_sccancer/</guid>
       <description>本篇主要记录基于10X cellranger之后的数据进行简单的初步处理。以及简单的报告，该部分内容基于 scCancer2
-如何安装scCancer2 如何使用scCancer2进行分析 </description>
+如何安装scCancer2 如何使用scCancer2进行分析 工具介绍 以下来自于 scCancer2的github介绍
+We updated our R toolkit, scCancer, based on massive single-cell transcriptome and spatial transcriptome data.
+Cell subtype annotation and cross-dataset label similarity: Our analysis mainly focused on cell subtype annotation by training multiple lightweight machine-learning models on scRNA-seq data. We proposed a method for quantitatively evaluating the similarity of cell subtype labels originating from different published datasets. We fully preserved the original labeling in cell atlases and analyzed the relationship between cell subtypes across datasets.</description>
     </item>
     <item>
       <title>10X_cellranger</title>
-      <link>https://gganakin.github.io/posts/10x_cellranger/</link>
+      <link>http://localhost:1313/posts/10x_cellranger/</link>
       <pubDate>Wed, 16 Oct 2024 10:25:54 +0800</pubDate>
-      <guid>https://gganakin.github.io/posts/10x_cellranger/</guid>
+      <guid>http://localhost:1313/posts/10x_cellranger/</guid>
       <description>10X_cellranger</description>
     </item>
     <item>
       <title>Hello</title>
-      <link>https://gganakin.github.io/posts/hello/</link>
+      <link>http://localhost:1313/posts/hello/</link>
       <pubDate>Wed, 16 Oct 2024 10:25:04 +0800</pubDate>
-      <guid>https://gganakin.github.io/posts/hello/</guid>
+      <guid>http://localhost:1313/posts/hello/</guid>
       <description>hello world</description>
     </item>
   </channel>
